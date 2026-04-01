@@ -1,8 +1,8 @@
+import { C } from "@/constants/theme";
 import { Text } from "@react-navigation/elements";
 import { useNavigation } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Switch, TextInput, TouchableOpacity, View } from "react-native";
-import { COLORS, FONTS, SIZES } from "@/constants/theme";
+import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
 
 export default function CriarContaProdutor() {
@@ -82,7 +82,7 @@ export default function CriarContaProdutor() {
 
 const styles = StyleSheet.create({
     main: {
-        backgroundColor: COLORS.background,
+        backgroundColor: C.background,
         height: "100%",
         width: "100%",
         display: "flex",
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
         gap: 10
     },
     text: {
-        color: COLORS.text,
+        color: C.text,
         fontWeight: 800,
         fontSize: 24
     },
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
         fontSize: 24
     },
     botaoConfirmar: {
-        backgroundColor: COLORS.primary,
+        backgroundColor: C.primario,
         borderColor: '#000000',
         borderWidth: 2,
         borderRadius: 8,
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     textoConfirmar: {
-        color: COLORS.text,
+        color: C.text,
         fontSize: 24,
         fontWeight: 800,
     }
