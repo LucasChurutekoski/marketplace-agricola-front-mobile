@@ -13,10 +13,14 @@ export default function MenuNavegacao() {
             >
                 <Text style={styles.texto}>Home</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.item}>
+            <TouchableOpacity style={styles.item}
+                 onPress={() => navigation.navigate("CriarAnuncio")}
+            >
                 <Text style={styles.texto}>Anunciar +</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.item}>
+            <TouchableOpacity style={styles.item}
+                onPress={() => navigation.navigate("CriarConta")}
+            >
                 <Text style={styles.texto}>Minha conta</Text>
             </TouchableOpacity>
         </View>

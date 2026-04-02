@@ -1,7 +1,8 @@
 import { Text } from "@react-navigation/elements";
 import { useNavigation } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Switch, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import { C, F } from "@/constants/theme";
 
 
 export default function CriarConta() {
@@ -89,7 +90,7 @@ export default function CriarConta() {
 
 const styles = StyleSheet.create({
     main: {
-        backgroundColor: "#171717",
+        backgroundColor: C.background,
         height: "100%",
         width: "100%",
         display: "flex",
