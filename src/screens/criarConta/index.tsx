@@ -3,6 +3,8 @@ import { useNavigation } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { C, F } from "@/constants/theme";
+import api from '../../app/api'
+
 
 
 export default function CriarConta() {
@@ -11,27 +13,41 @@ export default function CriarConta() {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [confirmaSenha, setConfirmaSenha] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const navigation = useNavigation<any>();
 
-    const funcCriarConta = () => {
+    const funcCriarConta = async () => {
+        if (!email || !nome) {
+            Alert.alert("Atenção", "Nome e e-mail são obrigatórios");
+            return;
+        }
+
         if (senha.length < 8) {
-            Alert.alert("Senha muito curta");
-            return
+            Alert.alert("Atenção", "A senha deve ter pelo menos 8 caracteres");
+            return;
         }
 
         if (senha !== confirmaSenha) {
-            Alert.alert("Senhas não conferem");
-            return
+            Alert.alert("Atenção", "As senhas não conferem");
+            return;
         }
+        try {
+            setLoading(true);
 
-        if (!email && !nome) {
-            Alert.alert("Nome e e-mail são obrigatórios");
-            return
+            const response = await api.post('/usuario', { nome, email, senha });
+
+            Alert.alert("Sucesso", "Conta criada com sucesso!", [
+                { text: "OK", onPress: () => navigation.navigate('Login') }
+            ]);
+        } catch (error: any) {
+            console.log(error);
+            const respostaErro = error.response?.data?.message ?? "Erro ao tentar criar conta";
+            Alert.alert("Erro", respostaErro);
+        } finally {
+            setLoading(false);
         }
-
-        navigation.navigate('Home')
-    }
+    };
 
     return (
         <View style={styles.main}>
@@ -78,14 +94,21 @@ export default function CriarConta() {
             <View>
                 <TouchableOpacity
                     activeOpacity={0.7}
-                    onPress={()=> navigation.navigate("CriarContaProdutor")}
+                    disabled={loading}
+                    onPress={() => navigation.navigate("CriarContaProdutor")}
                 >
                     <Text style={styles.textoProdutor}>Se for produtor Rural Clique aqui!</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    disabled={loading}
+                    onPress={() => navigation.navigate("Login")}
+                >
+                    <Text style={styles.textoProdutor}>Já tem uma conta? Clique aqui!</Text>
                 </TouchableOpacity>
             </View>
         </View>
     )
-
 }
 
 const styles = StyleSheet.create({
@@ -137,8 +160,8 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 800,
     },
-    textoProdutor : {
-        fontSize : 20,
-        color : "#F0F0F0"
+    textoProdutor: {
+        fontSize: 20,
+        color: "#F0F0F0"
     }
 })

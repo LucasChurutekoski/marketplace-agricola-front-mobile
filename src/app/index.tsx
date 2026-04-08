@@ -6,6 +6,7 @@ import Home from '@/screens/home';
 import CriarContaProdutor from '@/screens/criarContaProdutor';
 import ProdutosAnunciados from '@/screens/produtosAnunciados';
 import CriarAnuncio from '@/screens/criarAnuncio';
+import login from '@/screens/login';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -26,6 +27,9 @@ const RootStack = createNativeStackNavigator({
     },
     CriarAnuncio : {
       screen : CriarAnuncio
+    },
+    Login : {
+      screen : login
     }
   },
 });

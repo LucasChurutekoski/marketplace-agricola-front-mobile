@@ -4,43 +4,58 @@ import { Image } from "expo-image";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import api from '../../app/api'
 
 export default function ProdutosAnunciados() {
 
-    interface Card {
-        imagem: string;
-        titulo: string;
-        descricao: string;
-        preço: string;
-    }
-
-    interface Categoria {
-        nome: string;
-    }
 
     const navigation = useNavigation<any>();
 
-    const [cardsProdutos, setCardsProdutos] = useState<Card[]>([]);
-    const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [cardsProdutos, setCardsProdutos] = useState<Anuncio[]>([]);
+    const [categorias, setCategorias] = useState([]);
     const [filtro, setFiltro] = useState('')
 
-    function preencherCards() {
-        const dadosTeste: Card[] = [
-            { imagem: require("../../../assets/images/DefaultUser.jpeg"), titulo: "Produto 1", descricao: "Descrição do produto teste 1 Descrição do produto teste 1", preço: '3,70' },
-            { imagem: require("../../../assets/images/DefaultUser.jpeg"), titulo: "Produto 2", descricao: "Descrição do produto teste 2", preço: '3,70' },
-            { imagem: require("../../../assets/images/DefaultUser.jpeg"), titulo: "Produto 3", descricao: "Descrição do produto teste 3", preço: '3,70' },
-            { imagem: require("../../../assets/images/DefaultUser.jpeg"), titulo: "Produto 4", descricao: "Descrição do produto teste 4", preço: '3,70' },
-        ];
-        setCardsProdutos(dadosTeste);
+    const baseUrl = "http://192.168.155.66:3000/"
+
+    interface Produtor {
+        id: number;
+        nome: string;
+        email: string;
+        role: string;
     }
 
-    function preencherCategorias() {
-        const dadosCategorias: Categoria[] = [
-            { nome: "Hortaliças" },
-            { nome: "Frutas" },
-            { nome: "derivados" },
-        ];
-        setCategorias(dadosCategorias);
+    interface Categoria {
+        id: number;
+        nome: string;
+    }
+
+    interface Anuncio {
+        idAnuncio: number;
+        titulo: string;
+        descricao: string;
+        quantidadeDisponivel: number;
+        unidadeMedida: string;
+        precoUnitario: number;
+        status: string;
+        produtor: Produtor;
+        categoria: Categoria;
+        imagens: Imagem[]
+    }
+
+    interface Imagem {
+        id: number,
+        url: string,
+        isPrincipal: boolean
+    }
+
+    async function buscarAnuncios() {
+        try {
+            const response = await api.get('/anuncio')
+            setCardsProdutos(response.data)
+        } catch (error) {
+
+        }
+
     }
 
     function abrirCardEspecifico() {
@@ -48,13 +63,12 @@ export default function ProdutosAnunciados() {
     }
 
     useEffect(() => {
-        preencherCards();
-        preencherCategorias();
-    }, []);
+        buscarAnuncios()
+    }, [])
 
     return (
         <View style={styles.main} >
-            <FlatList
+            {/* <FlatList
                 horizontal
                 style={styles.listaFiltro}
                 contentContainerStyle={styles.containerFiltro}
@@ -69,7 +83,7 @@ export default function ProdutosAnunciados() {
                         </TouchableOpacity>
                     )
                 }}
-            />
+            /> */}
             <Text>Tela todos anúncios</Text>
             <TextInput
                 style={styles.campoBusca}
@@ -84,26 +98,35 @@ export default function ProdutosAnunciados() {
                 data={cardsProdutos}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => {
+                    const imagemPrincipal = item.imagens?.find(img => img.isPrincipal === true)?.url;
+
                     return (
                         <TouchableOpacity onPress={() => abrirCardEspecifico()}>
                             <View style={styles.card}>
-                                <View>
-                                    <Image
-                                        style={styles.imagem}
-                                        source={item.imagem}
-                                        contentFit="cover"
-                                    />
-                                </View>
+                                <Image
+                                    style={styles.imagem}
+                                    source={
+                                        imagemPrincipal
+                                            ? { uri: `${baseUrl}${imagemPrincipal}` }
+                                            : require('@/assets/images/icon.png')
+                                    }
+                                    contentFit="cover"
+                                />
                                 <View style={styles.topoDoCard}>
                                     <View style={styles.internoCard}>
                                         <Text style={styles.tituloCard}>{item.titulo}</Text>
-                                        <Text style={styles.preco}>R$ {item.preço}</Text>
+                                        <Text style={styles.tituloCard}>{item.descricao}</Text>
+                                        <Text style={styles.preco}>R$ {item.precoUnitario}</Text>
+                                        <Text style={styles.preco}>{item.categoria.nome}</Text>
+                                        <Text style={styles.preco}>{item.produtor.nome}</Text>
                                     </View>
                                 </View>
                             </View>
                         </TouchableOpacity>
                     )
                 }}
+
+
             />
         </View>
     )
