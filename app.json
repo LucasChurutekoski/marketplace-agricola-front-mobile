@@ -35,6 +35,13 @@
           }
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O aplicativo precisa de acesso às suas fotos para você escolher as imagens do produto.",
+          "cameraPermission": "O aplicativo precisa de acesso à câmera para tirar fotos."
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {

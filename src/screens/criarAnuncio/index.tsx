@@ -5,6 +5,7 @@ import api from '../../app/api'
 import { Picker } from '@react-native-picker/picker'
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from "expo-router";
+import * as ImagePicker from 'expo-image-picker';
 
 type FloatingLabelInputProps = TextInputProps & {
     label: string;
@@ -73,12 +74,10 @@ const FloatingLabelInput = ({ label, value, onChangeText, ...props }: FloatingLa
     );
 };
 
-
 interface categoria {
     id: number,
     nome: string
 }
-
 
 export default function CriarAnuncio() {
 
@@ -90,6 +89,13 @@ export default function CriarAnuncio() {
     const [unidadeMedida, setUnidadeMedida] = useState('')
     const [precoUnitario, setPrecoUnitario] = useState('')
     const [idCategoria, setIdCategoria] = useState('')
+    const [imagens, setImagens] = useState<imagem[]>([])
+
+    interface imagem {
+        uri : string
+        name : string
+        type : string
+    }
 
     const navigation = useNavigation<any>()
 
@@ -106,6 +112,14 @@ export default function CriarAnuncio() {
             formData.append('precoUnitario', precoUnitario);
             formData.append("idCategoria", idCategoria);
 
+            imagens.forEach((img, index) => {
+                formData.append('arquivos', {
+                    uri: img.uri,
+                    name: img.name,
+                    type: img.type,
+                } as any);
+            });
+
             await api.post('/anuncio', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -116,7 +130,7 @@ export default function CriarAnuncio() {
                 { text: "OK", onPress: () => navigation.navigate('Home') }
             ]);
         } catch (error) {
-            console.log(error)
+            console.log("ERRO AO POSTAR O ANÚNCIO", error)
         }
     }
 
@@ -129,14 +143,46 @@ export default function CriarAnuncio() {
         }
     }
 
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1
+        })
+
+        if (!result.canceled) {
+            const asset = result.assets[0];
+
+            const foto = {
+                uri: asset.uri,
+                name: asset.fileName || `foto_${Date.now()}.jpg`,
+                type: asset.mimeType || 'image/jpeg'
+            };
+
+            setImagens([foto]);
+        }
+
+
+    }
+
     useEffect(() => {
         buscaCategorias();
     }, [])
 
 
 
+
+
     return (
         <View style={styles.container}>
+            <View style={styles.botao}>
+                <TouchableOpacity
+                    onPress={() => pickImage()}
+                >
+                    <Text>Clique para adicionar uma foto</Text>
+                </TouchableOpacity>
+            </View>
             <FloatingLabelInput label="Título do anúncio" value={titulo} onChangeText={(v) => setTitulo(v)} />
             <FloatingLabelInput label="Descrição :" value={descricao} onChangeText={(v) => setDescricao(v)} />
 
