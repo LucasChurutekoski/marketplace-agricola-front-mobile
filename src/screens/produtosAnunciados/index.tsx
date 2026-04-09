@@ -1,10 +1,10 @@
 import { C, F } from "@/constants/theme";
 import { Text } from "@react-navigation/elements";
 import { Image } from "expo-image";
-import { useNavigation } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useNavigation } from "expo-router";
+import { useCallback, useState } from "react";
 import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import api from '../../app/api'
+import api from '../../app/api';
 
 export default function ProdutosAnunciados() {
 
@@ -12,7 +12,7 @@ export default function ProdutosAnunciados() {
     const navigation = useNavigation<any>();
 
     const [cardsProdutos, setCardsProdutos] = useState<Anuncio[]>([]);
-    const [categorias, setCategorias] = useState([]);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [filtro, setFiltro] = useState('')
 
     const baseUrl = "http://192.168.155.66:3000/"
@@ -53,22 +53,32 @@ export default function ProdutosAnunciados() {
             const response = await api.get('/anuncio')
             setCardsProdutos(response.data)
         } catch (error) {
-
+            console.log(error)
         }
-
     }
 
+    async function buscaCategorias() {
+        try {
+            const response = await api.get('/categoria')
+            setCategorias(response.data)
+        } catch (error) {
+            console.log("ERRO AO BUSCAR CATEGORIA ============================", error)
+        }
+    }
     function abrirCardEspecifico() {
         navigation.navigate('CriarConta');
     }
 
-    useEffect(() => {
-        buscarAnuncios()
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            buscarAnuncios()
+            buscaCategorias()
+        }, [])
+    )
 
     return (
         <View style={styles.main} >
-            {/* <FlatList
+             <FlatList
                 horizontal
                 style={styles.listaFiltro}
                 contentContainerStyle={styles.containerFiltro}
@@ -83,7 +93,7 @@ export default function ProdutosAnunciados() {
                         </TouchableOpacity>
                     )
                 }}
-            /> */}
+            />
             <Text>Tela todos anúncios</Text>
             <TextInput
                 style={styles.campoBusca}
@@ -114,11 +124,11 @@ export default function ProdutosAnunciados() {
                                 />
                                 <View style={styles.topoDoCard}>
                                     <View style={styles.internoCard}>
-                                        <Text style={styles.tituloCard}>{item.titulo}</Text>
-                                        <Text style={styles.tituloCard}>{item.descricao}</Text>
+                                        <Text style={styles.tituloCard}>Titulo: {item.titulo}</Text>
+                                        <Text style={styles.tituloCard}>descrição: {item.descricao}</Text>
                                         <Text style={styles.preco}>R$ {item.precoUnitario}</Text>
-                                        <Text style={styles.preco}>{item.categoria.nome}</Text>
-                                        <Text style={styles.preco}>{item.produtor.nome}</Text>
+                                        <Text style={styles.preco}>Categoria:{item.categoria.nome}</Text>
+                                        <Text style={styles.preco}>Nome do produtor:{item.produtor.nome}</Text>
                                     </View>
                                 </View>
                             </View>

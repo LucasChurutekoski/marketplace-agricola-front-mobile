@@ -1,15 +1,19 @@
 import { C, F } from "@/constants/theme";
-import { useRef, useState } from "react";
-import { Animated, StyleSheet, Text, TextInput, TextInputProps, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Animated, StyleSheet, Text, TextInput, TextInputProps, TouchableOpacity, View } from "react-native";
+import api from '../../app/api'
+import { Picker } from '@react-native-picker/picker'
+import * as SecureStore from 'expo-secure-store';
+import { useNavigation } from "expo-router";
 
 type FloatingLabelInputProps = TextInputProps & {
     label: string;
 };
 
-const FloatingLabelInput = ({ label, ...props }: FloatingLabelInputProps) => {
+
+const FloatingLabelInput = ({ label, value, onChangeText, ...props }: FloatingLabelInputProps) => {
     const [isFocused, setIsFocused] = useState(false);
-    const [value, setValue] = useState('');
-    
+
     const animatedLabel = useRef(new Animated.Value(value === '' ? 0 : 1)).current;
 
     const handleFocus = () => {
@@ -62,23 +66,109 @@ const FloatingLabelInput = ({ label, ...props }: FloatingLabelInputProps) => {
                 style={styles.inputs}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                onChangeText={(text) => setValue(text)}
+                onChangeText={onChangeText}
                 value={value}
             />
         </View>
     );
 };
 
+
+interface categoria {
+    id: number,
+    nome: string
+}
+
+
 export default function CriarAnuncio() {
+
+    const [categorias, setCategorias] = useState<categoria[]>([]);
+
+    const [titulo, setTitulo] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [quantidadeDisponivel, setQuantidadeDisponivel] = useState('');
+    const [unidadeMedida, setUnidadeMedida] = useState('')
+    const [precoUnitario, setPrecoUnitario] = useState('')
+    const [idCategoria, setIdCategoria] = useState('')
+
+    const navigation = useNavigation<any>()
+
+    async function publicarAnuncio() {
+
+        const token = await SecureStore.getItemAsync('token');
+
+        try {
+            const formData = new FormData();
+            formData.append('titulo', titulo);
+            formData.append('descricao', descricao);
+            formData.append('quantidadeDisponivel', quantidadeDisponivel);
+            formData.append('unidadeMedida', unidadeMedida);
+            formData.append('precoUnitario', precoUnitario);
+            formData.append("idCategoria", idCategoria);
+
+            await api.post('/anuncio', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            Alert.alert("Sucesso", "Anúncio publicado com sucesso!", [
+                { text: "OK", onPress: () => navigation.navigate('Home') }
+            ]);
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function buscaCategorias() {
+        try {
+            const response = await api.get('/categoria');
+            setCategorias(response.data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        buscaCategorias();
+    }, [])
+
+
+
     return (
         <View style={styles.container}>
-            <FloatingLabelInput label="Nome Do Produto" />
-            <FloatingLabelInput label="Categoria" />
-            <FloatingLabelInput label="Quantidade total disponível" keyboardType="numeric" />
-            <FloatingLabelInput label="Unidade" />
-            <FloatingLabelInput label="Preço por unidade" keyboardType="numeric" />
+            <FloatingLabelInput label="Título do anúncio" value={titulo} onChangeText={(v) => setTitulo(v)} />
+            <FloatingLabelInput label="Descrição :" value={descricao} onChangeText={(v) => setDescricao(v)} />
 
-            <TouchableOpacity style={styles.botao}>
+            <View style={styles.inputPickerContainer}>
+                <Picker
+                    placeholder="Categoria:"
+                    selectedValue={idCategoria}
+                    onValueChange={(item) => setIdCategoria(item)}
+
+                >
+                    <Picker.Item style={styles.inputPicker} label="Selecione uma categoria" />
+                    {categorias.map((categoria) => (
+
+                        <Picker.Item style={styles.inputPicker}
+                            label={categoria.nome}
+                            key={categoria.id}
+                            value={categoria.id}
+                        />
+                    )
+                    )}
+                </Picker>
+            </View>
+            <FloatingLabelInput label="Quantidade total disponível" keyboardType="numeric" value={quantidadeDisponivel} onChangeText={(v) => setQuantidadeDisponivel(v)} />
+            <FloatingLabelInput label="Unidade de medida" value={unidadeMedida} onChangeText={(v) => setUnidadeMedida(v)} />
+            <FloatingLabelInput label="Preço unitário" keyboardType="numeric" value={precoUnitario} onChangeText={(v) => setPrecoUnitario(v)} />
+
+
+
+            <TouchableOpacity
+                style={styles.botao}
+                onPress={() => publicarAnuncio()}
+            >
                 <Text style={styles.textoBotao}>Publicar Anúncio</Text>
             </TouchableOpacity>
         </View>
@@ -116,5 +206,29 @@ const styles = StyleSheet.create({
         color: "#FFF",
         fontSize: F.textoGrande,
         fontWeight: 'bold'
-    }
+    },
+    picker: {
+        width: "100%"
+    },
+    inputPicker: {
+        fontSize: F.textoMedio,
+        borderRadius: 8,
+        color: C.textoPrimario,
+        width: "100%",
+        backgroundColor: C.background,
+        borderWidth: 2,
+        borderColor: "red"
+    },
+    labelPicker: {
+        backgroundColor: C.background,
+        color: C.text,
+        fontSize: F.textoGrande,
+    },
+    inputPickerContainer: {
+        width: "75%",
+        borderWidth: 1,
+        borderColor: C.bordas,
+        borderRadius: 8
+    },
+
 });
